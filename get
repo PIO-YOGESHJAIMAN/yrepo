@@ -1,0 +1,40 @@
+
+H                                                               
+DCMD              PR                  EXTPGM('QCMDEXC')         
+D                              200a   Options(*VARSIZE) const   
+D                               15P 5 const                     
+ *                                                              
+DCommand          s            200A                             
+DResponse         s           4096A   Inz                       
+DUrl              s            200A                             
+DPos              s              5p 0 Inz                       
+ *                                                              
+C     *ENTRY        plist                                       
+C                   parm                    url                 
+ *                                                              
+  /Free                                                         
+   url = %trim(url);                                            
+   Command ='CHGJOB CCSID(37)';                                 
+   CMD(Command:%len(%trim(Command)));                           
+   Exec sql                                                     
+    set option commit = *none;                                  
+
+  Exec sql                                           
+   drop table yogesh/response;                       
+  Exec sql                                           
+   Create table yogesh/response(Data varchar(4096));
+  Exec sql                                           
+   Declare C1 cursor for                             
+   select data from(values char                      
+  (systools.httpgetclob(:Url,''),4096)              
+  ) ws(data);                                       
+                                         
+
+  Exec sql                                       
+    Open c1;                                      
+  Exec sql                                       
+    Fetch c1 into :Response;                      
+  Exec sql                                       
+    Insert into yogesh/response values(:Response);
+    *Inlr = *On;                                  
+  /End-free                                       
